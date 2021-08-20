@@ -2,10 +2,14 @@ import axios from "../../axios-jsonph";
 import { useEffect } from "react";
 import { useState } from "react";
 import { IUser } from "../../interfaces";
+import User from "../../components/User/User";
+import { CircularProgress } from "@material-ui/core";
+import { useHistory } from "react-router-dom";
 
-const Users = (props: any) => {
+const Users = () => {
     const [users, setUsers] = useState<IUser[]>([]);
-
+    const [loading, setLoading] = useState(true);
+    const history = useHistory();
     useEffect(() => {
         //Promise to get users
         const users = axios.get("/users").then((users) => {
@@ -35,14 +39,27 @@ const Users = (props: any) => {
                 };
             });
             setUsers(mutatedUsers);
+            setLoading(false);
         });
     }, []);
 
-    return (
-        <div>
-            <p>Users</p>
-        </div>
-    );
+    const handleClick = (id: number) => {
+        history.push(`/${id}`);
+    };
+
+    const renderUsers = users.map((user) => {
+        return (
+            <User
+                photoUrl={user.photoUrl}
+                id={user.id}
+                username={user.username}
+                key={user.id}
+                clicked={handleClick.bind(null, user.id)}
+            />
+        );
+    });
+
+    return <>{loading ? <CircularProgress /> : renderUsers}</>;
 };
 
 export default Users;
