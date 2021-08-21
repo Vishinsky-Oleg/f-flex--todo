@@ -11,28 +11,48 @@ const useStyles = makeStyles({
     },
 });
 
-const TodoButtons = () => {
+const TodoButtons = ({
+    isFirebase,
+    completed,
+}: {
+    isFirebase: boolean;
+    completed: boolean;
+}) => {
     const classes = useStyles();
+    const tooltipMessage = "JSONPlaceholder's todo cannot be modified";
 
     return (
         <div className={classes.icons}>
-            <Tooltip title="Check" aria-label="check">
-                <Checkbox
-                    checked={false}
-                    color="primary"
-                    inputProps={{ "aria-label": "secondary checkbox" }}
-                />
+            <Tooltip
+                title={isFirebase ? "Check" : tooltipMessage}
+                aria-label="check">
+                <span>
+                    <Checkbox
+                        disabled={!isFirebase}
+                        checked={completed}
+                        color="primary"
+                        inputProps={{ "aria-label": "secondary checkbox" }}
+                    />
+                </span>
             </Tooltip>
-            <Tooltip title="Delete" aria-label="delete">
-                <IconButton aria-label="delete">
-                    <DeleteIcon />
-                </IconButton>
+            <Tooltip
+                title={isFirebase ? "Check" : tooltipMessage}
+                aria-label="delete">
+                <span>
+                    <IconButton aria-label="delete" disabled={!isFirebase}>
+                        <DeleteIcon />
+                    </IconButton>
+                </span>
             </Tooltip>
 
-            <Tooltip title="Edit" aria-label="edit">
-                <IconButton aria-label="change">
-                    <CreateIcon />
-                </IconButton>
+            <Tooltip
+                title={isFirebase ? "Check" : tooltipMessage}
+                aria-label="edit">
+                <span>
+                    <IconButton aria-label="change" disabled={!isFirebase}>
+                        <CreateIcon />
+                    </IconButton>
+                </span>
             </Tooltip>
         </div>
     );

@@ -1,4 +1,3 @@
-
 export interface IUser {
     id: number;
     username: string;
@@ -11,4 +10,5 @@ export interface ITodo {
     userId: number;
     title: string;
     completed: boolean;
+    firebase: boolean;
 }
