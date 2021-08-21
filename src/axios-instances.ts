@@ -4,3 +4,7 @@ export const axiosJsonph = axios.create({
     baseURL: "http://jsonplaceholder.typicode.com/",
 });
 
+export const axiosFirebase = axios.create({
+    baseURL:
+        "https://t-flex--todo-default-rtdb.europe-west1.firebasedatabase.app/",
+});

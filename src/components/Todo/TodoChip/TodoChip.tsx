@@ -3,7 +3,7 @@ import firebaseIcon from "../../../assets/touchicon.png";
 
 const useStyles = makeStyles({
     chip: {
-        margin: "15px auto",
+        margin: "15px",
     },
 });
 

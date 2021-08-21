@@ -7,7 +7,7 @@ type ErrorProps = {
 const Error = ({ message }: ErrorProps) => {
     return (
         <div>
-            <Typography gutterBottom variant="h3" component="h1" color="error">
+            <Typography gutterBottom variant="h4" component="h1" color="error">
                 Oops! Something went wrong!
             </Typography>
             <Typography gutterBottom variant="h5" component="p" color="error">

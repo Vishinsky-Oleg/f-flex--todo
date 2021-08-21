@@ -7,7 +7,13 @@ const useStyles = makeStyles({
     icons: {
         display: "flex",
         justifyContent: "center",
+        alignItems: "center",
         height: 42,
+    },
+    Btn: {
+        padding: 0,
+        height: 42,
+        width: 42,
     },
 });
 
@@ -39,7 +45,10 @@ const TodoButtons = ({
                 title={isFirebase ? "Check" : tooltipMessage}
                 aria-label="delete">
                 <span>
-                    <IconButton aria-label="delete" disabled={!isFirebase}>
+                    <IconButton
+                        aria-label="delete"
+                        disabled={!isFirebase}
+                        className={classes.Btn}>
                         <DeleteIcon />
                     </IconButton>
                 </span>
@@ -49,7 +58,10 @@ const TodoButtons = ({
                 title={isFirebase ? "Check" : tooltipMessage}
                 aria-label="edit">
                 <span>
-                    <IconButton aria-label="change" disabled={!isFirebase}>
+                    <IconButton
+                        aria-label="change"
+                        disabled={!isFirebase}
+                        className={classes.Btn}>
                         <CreateIcon />
                     </IconButton>
                 </span>

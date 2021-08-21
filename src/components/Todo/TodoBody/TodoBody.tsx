@@ -5,10 +5,17 @@ const useStyles = makeStyles({
     text: {
         margin: "10px 15px",
         color: "#000000",
+        width: "100%",
     },
 });
 
-const TodoBody = ({ completed }: { completed: boolean }) => {
+const TodoBody = ({
+    completed,
+    text,
+}: {
+    completed: boolean;
+    text: string;
+}) => {
     const classes = useStyles();
     const completedStyle = completed
         ? {
@@ -23,10 +30,7 @@ const TodoBody = ({ completed }: { completed: boolean }) => {
             component="p"
             style={completedStyle}
             className={classes.text}>
-            Lizards are a widespread group of squamate reptiles, with over 6,000
-            species, ranging across all continents except AntarcticaLizards are
-            a widespread group of squamate reptiles, with over 6,000 species,
-            ranging across all continents except Antarctica
+            {text}
         </Typography>
     );
 };

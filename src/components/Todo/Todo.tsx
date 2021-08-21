@@ -14,6 +14,7 @@ const useStyles = makeStyles({
     media: {
         display: "flex",
         alignItems: "center",
+        justifyContent: "space-between",
     },
     [`@media (max-width: 750px)`]: {
         media: {
@@ -29,7 +30,7 @@ const Todo = ({ id, userId, completed, title, firebase }: ITodo) => {
         <Card className={classes.root}>
             <CardContent className={classes.media}>
                 <TodoChip isFirebase={firebase} />
-                <TodoBody completed={completed} />
+                <TodoBody completed={completed} text={title} />
                 <TodoButtons isFirebase={firebase} completed={completed} />
             </CardContent>
         </Card>

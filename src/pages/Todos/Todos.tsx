@@ -1,17 +1,65 @@
 import { useEffect } from "react";
 import Todo from "../../components/Todo/Todo";
-import { axiosJsonph as axios } from "../../axios-instances";
+import { axiosFirebase } from "../../axios-instances";
+import { axiosJsonph } from "../../axios-instances";
 import { useState } from "react";
 import { ITodo } from "../../interfaces";
 import TodosLabel from "../../components/Todo/TodosLabel/TodosUserPanel";
+import AddTodo from "../../components/AddTodo/AddTodo";
+import { Snackbar } from "@material-ui/core";
+import Alert from "@material-ui/lab/Alert";
 
 const Todos = (props: any) => {
     const [todos, setTodos] = useState<ITodo[]>([]);
+    const [addTodoModal, toggleAddTodoModal] = useState(false);
+    const [newTodo, setNewTodo] = useState("");
+    const [error, setError] = useState(false);
+    const [success, setSuccess] = useState(false);
     const id = +props.match.params.id;
     const username = new URLSearchParams(props.location.search).get("username");
 
+    const handleClose = () => {
+        toggleAddTodoModal(false);
+    };
+
+    const handleNewTodo = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setNewTodo(event.target.value);
+    };
+
+    const handleCloseSuccess = (
+        event?: React.SyntheticEvent,
+        reason?: string
+    ) => {
+        if (reason === "clickaway") {
+            return;
+        }
+
+        setSuccess(false);
+    };
+
+    const addTodo = () => {
+        const todo = {
+            title: newTodo,
+            id: Date.now(),
+            userId: id,
+            completed: false,
+            firebase: true,
+        };
+        axiosFirebase
+            .post("/users/" + id + ".json", todo)
+            .then((res) => {
+                toggleAddTodoModal(false);
+                setSuccess(true);
+                setNewTodo("");
+            })
+            .catch((er) => {
+                console.log(er.message);
+                setError(true);
+            });
+    };
+
     useEffect(() => {
-        axios.get("/todos").then((todos) => {
+        const jsonPhTodos = axiosJsonph.get("/todos").then((todos) => {
             const todosById = todos.data
                 .filter(
                     (todo: {
@@ -26,9 +74,35 @@ const Todos = (props: any) => {
                 .map((todo: {}) => {
                     return { ...todo, firebase: false };
                 });
-            setTodos(todosById);
+            return todosById;
         });
-    }, [id]);
+        const fireBaseTodos = axiosFirebase
+            .get("/users/" + id + ".json")
+            .then((todos) => {
+                if (todos.data) {
+                    const todosById = Object.entries(todos.data)
+                        .map((entry) => {
+                            return entry[1];
+                        })
+                        .sort((a: any, b: any) => {
+                            return b.id - a.id;
+                        });
+
+                    return todosById;
+                } else {
+                    return [];
+                }
+            });
+
+        Promise.all([fireBaseTodos, jsonPhTodos])
+            .then((res) => {
+                const finalTodos = [...res[0], ...res[1]];
+                setTodos(finalTodos);
+            })
+            .catch((er) => {
+                console.log(er.message);
+            });
+    }, [success, id]);
 
     const todosArray = todos.map((todo) => (
         <Todo
@@ -42,8 +116,36 @@ const Todos = (props: any) => {
     ));
     return (
         <>
-            <TodosLabel username={username} id={id} />
+            {addTodoModal && (
+                <AddTodo
+                    toggleOpen={handleClose}
+                    isOpened={addTodoModal}
+                    addNewTodo={handleNewTodo}
+                    newTodoValue={newTodo}
+                    addTodo={addTodo}
+                    error={error}
+                />
+            )}
+            <TodosLabel
+                username={username}
+                id={id}
+                addNew={() => {
+                    toggleAddTodoModal(true);
+                }}
+            />
             {todosArray}
+
+            <Snackbar
+                open={success}
+                autoHideDuration={6000}
+                onClose={handleCloseSuccess}>
+                <Alert
+                    severity="success"
+                    variant="filled"
+                    onClose={handleCloseSuccess}>
+                    Todo has been added to Firebase!
+                </Alert>
+            </Snackbar>
         </>
     );
 };

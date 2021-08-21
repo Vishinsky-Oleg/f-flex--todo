@@ -4,9 +4,11 @@ import firebaseIcon from "../../../assets/touchicon.png";
 const TodosUserPanel = ({
     username,
     id,
+    addNew,
 }: {
     username: string | null;
     id: number;
+    addNew(): void;
 }) => {
     return (
         <div style={{ textAlign: "center" }}>
@@ -20,7 +22,7 @@ const TodosUserPanel = ({
                 variant="contained"
                 color="primary"
                 style={{ margin: "20px" }}
-                // className={classes.button}
+                onClick={addNew}
                 endIcon={<Avatar alt="Firebase" src={firebaseIcon} />}>
                 Add new TODO to Firebase
             </Button>
