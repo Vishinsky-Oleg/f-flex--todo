@@ -1,14 +1,16 @@
-import axios from "../../axios-jsonph";
+import { axiosJsonph as axios } from "../../axios-instances";
 import { useEffect } from "react";
 import { useState } from "react";
 import { IUser } from "../../interfaces";
 import User from "../../components/User/User";
 import { CircularProgress } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
+import Error from "../../components/Error/Error";
 
 const Users = () => {
     const [users, setUsers] = useState<IUser[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
     const history = useHistory();
     useEffect(() => {
         //Promise to get users
@@ -31,20 +33,29 @@ const Users = () => {
         });
 
         //Mutate them together
-        Promise.all([photos, users]).then((res) => {
-            const mutatedUsers = [...res[1]].map((user: any) => {
-                return {
-                    ...user,
-                    photoUrl: res[0][user.id],
-                };
+        Promise.all([photos, users])
+            .then((res) => {
+                const mutatedUsers = [...res[1]].map((user: any) => {
+                    return {
+                        ...user,
+                        photoUrl: res[0][user.id],
+                    };
+                });
+                setUsers(mutatedUsers);
+                setLoading(false);
+            })
+            .catch((er) => {
+                setLoading(false);
+                setError(er.message);
             });
-            setUsers(mutatedUsers);
-            setLoading(false);
-        });
     }, []);
 
-    const handleClick = (id: number) => {
-        history.push(`/${id}`);
+    const handleClick = (obj: {id: any, username: string}) => {
+        const historyObj = {
+            pathname: "/" + obj.id,
+            search: "?username=" + obj.username,
+        };
+        history.push(historyObj);
     };
 
     const renderUsers = users.map((user) => {
@@ -54,12 +65,22 @@ const Users = () => {
                 id={user.id}
                 username={user.username}
                 key={user.id}
-                clicked={handleClick.bind(null, user.id)}
+                clicked={handleClick.bind( null, {id: user.id, username: user.username})}
             />
         );
     });
 
-    return <>{loading ? <CircularProgress /> : renderUsers}</>;
+    return (
+        <>
+            {loading ? (
+                <CircularProgress />
+            ) : error ? (
+                <Error message={error} />
+            ) : (
+                renderUsers
+            )}
+        </>
+    );
 };
 
 export default Users;

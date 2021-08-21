@@ -4,26 +4,23 @@ import CardActionArea from "@material-ui/core/CardActionArea";
 import CardContent from "@material-ui/core/CardContent";
 import CardMedia from "@material-ui/core/CardMedia";
 import Typography from "@material-ui/core/Typography";
+import { IUser } from "../../interfaces";
 
 const useStyles = makeStyles({
     root: {
-        minWidth: 250,
+        minWidth: 270,
         display: "inline-block",
-        margin: 15,
+        margin: "10px",
     },
     media: {
         height: 140,
     },
+    typography: {
+        fontSize: 18,
+    },
 });
 
-type UserListProps = {
-    photoUrl: string;
-    username: string;
-    id: number;
-    clicked(id: any): void;
-};
-
-const User = ({ photoUrl, id, username, clicked }: UserListProps) => {
+const User = ({ photoUrl, id, username, clicked }: IUser) => {
     const classes = useStyles();
     return (
         <Card className={classes.root} onClick={clicked}>
@@ -43,7 +40,7 @@ const User = ({ photoUrl, id, username, clicked }: UserListProps) => {
                             gutterBottom
                             variant="h5"
                             component="p"
-                            style={{ fontSize: 20 }}>
+                            className={classes.typography}>
                             <strong>Username: </strong>
                             {username}
                         </Typography>
