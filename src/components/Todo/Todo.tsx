@@ -23,7 +23,14 @@ const useStyles = makeStyles({
     },
 });
 
-const Todo = ({ id, userId, completed, title, firebase }: ITodo) => {
+const Todo = ({
+    id,
+    userId,
+    completed,
+    title,
+    firebase,
+    handleCheck,
+}: ITodo) => {
     const classes = useStyles();
 
     return (
@@ -31,7 +38,11 @@ const Todo = ({ id, userId, completed, title, firebase }: ITodo) => {
             <CardContent className={classes.media}>
                 <TodoChip isFirebase={firebase} />
                 <TodoBody completed={completed} text={title} />
-                <TodoButtons isFirebase={firebase} completed={completed} />
+                <TodoButtons
+                    isFirebase={firebase}
+                    completed={completed}
+                    handleCheck={handleCheck}
+                />
             </CardContent>
         </Card>
     );

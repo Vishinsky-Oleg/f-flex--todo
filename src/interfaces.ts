@@ -11,4 +11,6 @@ export interface ITodo {
     title: string;
     completed: boolean;
     firebase: boolean;
+    handleCheck(id: any): void;
+    firebaseName?: any;
 }

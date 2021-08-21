@@ -20,9 +20,11 @@ const useStyles = makeStyles({
 const TodoButtons = ({
     isFirebase,
     completed,
+    handleCheck,
 }: {
     isFirebase: boolean;
     completed: boolean;
+    handleCheck(id: any): void;
 }) => {
     const classes = useStyles();
     const tooltipMessage = "JSONPlaceholder's todo cannot be modified";
@@ -38,6 +40,7 @@ const TodoButtons = ({
                         checked={completed}
                         color="primary"
                         inputProps={{ "aria-label": "secondary checkbox" }}
+                        onClick={handleCheck}
                     />
                 </span>
             </Tooltip>

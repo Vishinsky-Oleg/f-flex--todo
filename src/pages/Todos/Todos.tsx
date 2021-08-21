@@ -37,7 +37,7 @@ const Todos = (props: any) => {
         setSuccess(false);
     };
 
-    const addTodo = () => {
+    const handleAddTodo = () => {
         const todo = {
             title: newTodo,
             id: Date.now(),
@@ -58,6 +58,27 @@ const Todos = (props: any) => {
             });
     };
 
+    const handleCheck = (firebaseName: any) => {
+        const newTodos = todos.map((todo) => {
+            if (todo.firebaseName === firebaseName) {
+                return { ...todo, completed: !todo.completed };
+            } else {
+                return todo;
+            }
+        });
+        const checkedTodo = newTodos.filter(
+            (todo) => todo.firebaseName === firebaseName
+        );
+        setTodos(newTodos);
+        axiosFirebase.patch(
+            "/users/" + id + "/" + firebaseName + "/.json",
+            checkedTodo[0]
+        );
+        // .then(() => {
+        //     setSuccess(true);
+        // });
+    };
+
     useEffect(() => {
         const jsonPhTodos = axiosJsonph.get("/todos").then((todos) => {
             const todosById = todos.data
@@ -72,7 +93,7 @@ const Todos = (props: any) => {
                     }
                 )
                 .map((todo: {}) => {
-                    return { ...todo, firebase: false };
+                    return { ...todo, firebase: false, firebaseName: null };
                 });
             return todosById;
         });
@@ -80,13 +101,21 @@ const Todos = (props: any) => {
             .get("/users/" + id + ".json")
             .then((todos) => {
                 if (todos.data) {
-                    const todosById = Object.entries(todos.data)
-                        .map((entry) => {
-                            return entry[1];
-                        })
-                        .sort((a: any, b: any) => {
-                            return b.id - a.id;
-                        });
+                    const sup = [];
+                    for (let key in todos.data) {
+                        sup.push({ ...todos.data[key], firebaseName: key });
+                    }
+                    const todosById = sup.sort((a: any, b: any) => {
+                        return b.id - a.id;
+                    });
+
+                    // const todosById = Object.entries(todos.data)
+                    //     .map((entry) => {
+                    //         return entry[1];
+                    //     })
+                    //     .sort((a: any, b: any) => {
+                    //         return b.id - a.id;
+                    //     });
 
                     return todosById;
                 } else {
@@ -112,6 +141,7 @@ const Todos = (props: any) => {
             userId={todo.userId}
             completed={todo.completed}
             firebase={todo.firebase}
+            handleCheck={handleCheck.bind(null, todo.firebaseName)}
         />
     ));
     return (
@@ -122,7 +152,7 @@ const Todos = (props: any) => {
                     isOpened={addTodoModal}
                     addNewTodo={handleNewTodo}
                     newTodoValue={newTodo}
-                    addTodo={addTodo}
+                    addTodo={handleAddTodo}
                     error={error}
                 />
             )}
