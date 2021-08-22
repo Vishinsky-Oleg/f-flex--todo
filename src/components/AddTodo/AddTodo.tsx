@@ -7,7 +7,7 @@ import {
 } from "@material-ui/core";
 import DialogContent from "@material-ui/core/DialogContent";
 import { makeStyles } from "@material-ui/core/styles";
-import React from "react";
+import { IAddTodo } from "../../interfaces";
 import Error from "../Error/Error";
 
 const useStyles = makeStyles({
@@ -43,20 +43,18 @@ const useStyles = makeStyles({
 const AddTodo = ({
     isOpened,
     toggleOpen,
-    addNewTodo,
-    newTodoValue,
     addTodo,
     error,
-}: {
-    isOpened: boolean;
-    toggleOpen(): void;
-    addNewTodo(event: React.ChangeEvent<HTMLInputElement>): void;
-    newTodoValue: string;
-    addTodo(): void;
-    error: boolean;
-}) => {
+    textAreaRef,
+    inputIsValid,
+    text,
+    firebaseName,
+}: IAddTodo) => {
     const classes = useStyles();
-
+    const contentTitle = text
+        ? "Edit TODO in Firebase"
+        : "Add new TODO to Firebase";
+    const typeOfAction = text ? "edit" : "add";
     return (
         <Dialog
             open={isOpened}
@@ -68,24 +66,30 @@ const AddTodo = ({
             ) : (
                 <DialogContent className={classes.content}>
                     <DialogContentText id="alert-dialog-description">
-                        Add new TODO to Firebase
+                        {contentTitle}
                     </DialogContentText>
+
                     <TextField
-                        onChange={addNewTodo}
-                        error={newTodoValue.length < 1}
+                        error={!inputIsValid}
                         id="outlined-multiline-static"
                         label="Your TODO"
                         multiline
-                        value={newTodoValue}
+                        inputRef={textAreaRef}
+                        defaultValue={text}
                         variant="outlined"
                         className={classes.text}
                         helperText="TODO can not be empty"
+                        autoFocus
+                        required
                     />
                 </DialogContent>
             )}
             <DialogActions className={classes.btns}>
-                <Button variant="contained" color="primary" onClick={addTodo}>
-                    Add
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => addTodo(typeOfAction, firebaseName)}>
+                    {typeOfAction}
                 </Button>
                 <Button
                     color="secondary"

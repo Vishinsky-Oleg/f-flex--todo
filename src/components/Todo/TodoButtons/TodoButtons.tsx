@@ -21,10 +21,12 @@ const TodoButtons = ({
     isFirebase,
     completed,
     handleCheck,
+    handleEdit,
 }: {
     isFirebase: boolean;
     completed: boolean;
-    handleCheck(id: any): void;
+    handleCheck(id: any, action?: string): void;
+    handleEdit(): void;
 }) => {
     const classes = useStyles();
     const tooltipMessage = "JSONPlaceholder's todo cannot be modified";
@@ -40,7 +42,7 @@ const TodoButtons = ({
                         checked={completed}
                         color="primary"
                         inputProps={{ "aria-label": "secondary checkbox" }}
-                        onClick={handleCheck}
+                        onClick={() => handleCheck("check")}
                     />
                 </span>
             </Tooltip>
@@ -51,20 +53,22 @@ const TodoButtons = ({
                     <IconButton
                         aria-label="delete"
                         disabled={!isFirebase}
-                        className={classes.Btn}>
+                        className={classes.Btn}
+                        onClick={() => handleCheck("delete")}>
                         <DeleteIcon />
                     </IconButton>
                 </span>
             </Tooltip>
 
             <Tooltip
-                title={isFirebase ? "Check" : tooltipMessage}
+                title={isFirebase ? "Edit" : tooltipMessage}
                 aria-label="edit">
                 <span>
                     <IconButton
                         aria-label="change"
                         disabled={!isFirebase}
-                        className={classes.Btn}>
+                        className={classes.Btn}
+                        onClick={handleEdit}>
                         <CreateIcon />
                     </IconButton>
                 </span>

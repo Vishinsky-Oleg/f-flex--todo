@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Todo from "../../components/Todo/Todo";
 import { axiosFirebase } from "../../axios-instances";
 import { axiosJsonph } from "../../axios-instances";
@@ -9,21 +9,29 @@ import AddTodo from "../../components/AddTodo/AddTodo";
 import { Snackbar } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 
+type IInfoToModal = {
+    text: string;
+    firebaseName: any;
+};
+
 const Todos = (props: any) => {
     const [todos, setTodos] = useState<ITodo[]>([]);
-    const [addTodoModal, toggleAddTodoModal] = useState(false);
-    const [newTodo, setNewTodo] = useState("");
+    const [modal, toggleModal] = useState(false);
+    const [infoToModal, setInfoToModal] = useState<IInfoToModal>({
+        text: "",
+        firebaseName: "",
+    });
     const [error, setError] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [textAreaInput, toggleTextAreaInputIsValid] = useState(true);
+    const textAreaRef = useRef<HTMLInputElement>(null);
+
     const id = +props.match.params.id;
     const username = new URLSearchParams(props.location.search).get("username");
 
     const handleClose = () => {
-        toggleAddTodoModal(false);
-    };
-
-    const handleNewTodo = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNewTodo(event.target.value);
+        toggleModal(false);
+        toggleTextAreaInputIsValid(true);
     };
 
     const handleCloseSuccess = (
@@ -33,50 +41,98 @@ const Todos = (props: any) => {
         if (reason === "clickaway") {
             return;
         }
-
         setSuccess(false);
     };
 
-    const handleAddTodo = () => {
-        const todo = {
-            title: newTodo,
-            id: Date.now(),
-            userId: id,
-            completed: false,
-            firebase: true,
-        };
-        axiosFirebase
-            .post("/users/" + id + ".json", todo)
-            .then((res) => {
-                toggleAddTodoModal(false);
-                setSuccess(true);
-                setNewTodo("");
-            })
-            .catch((er) => {
-                console.log(er.message);
-                setError(true);
+    const handleAddOrEditTodo = (action: string, firebaseName: string) => {
+        if (action === "add") {
+            if (textAreaRef.current!.value.length > 0) {
+                toggleTextAreaInputIsValid(true);
+                const todo = {
+                    title: textAreaRef.current!.value,
+                    id: Date.now(),
+                    userId: id,
+                    completed: false,
+                    firebase: true,
+                };
+                axiosFirebase
+                    .post("/users/" + id + ".json", todo)
+                    .then((res) => {
+                        toggleModal(false);
+                        setSuccess(true);
+                    })
+                    .catch((er) => {
+                        console.log(er.message);
+                        setError(true);
+                    });
+            } else {
+                toggleTextAreaInputIsValid(false);
+            }
+        } else if (action === "edit") {
+            const newTodos = todos.map((todo) => {
+                if (todo.firebaseName === firebaseName) {
+                    return { ...todo, title: textAreaRef.current!.value };
+                } else {
+                    return todo;
+                }
             });
+            const checkedTodo = newTodos.filter(
+                (todo) => todo.firebaseName === firebaseName
+            );
+            setTodos(newTodos);
+            axiosFirebase
+                .patch(
+                    "/users/" + id + "/" + firebaseName + "/.json",
+                    checkedTodo[0]
+                )
+                .then(() => {
+                    setSuccess(true);
+                    toggleModal(false);
+                })
+                .catch((er) => {
+                    console.error(er.message);
+                });
+        }
     };
 
-    const handleCheck = (firebaseName: any) => {
-        const newTodos = todos.map((todo) => {
-            if (todo.firebaseName === firebaseName) {
-                return { ...todo, completed: !todo.completed };
-            } else {
-                return todo;
-            }
-        });
-        const checkedTodo = newTodos.filter(
-            (todo) => todo.firebaseName === firebaseName
-        );
-        setTodos(newTodos);
-        axiosFirebase.patch(
-            "/users/" + id + "/" + firebaseName + "/.json",
-            checkedTodo[0]
-        );
-        // .then(() => {
-        //     setSuccess(true);
-        // });
+    const handleCheckAndDelete = (firebaseName: any, action: string) => {
+        if (action === "check") {
+            const newTodos = todos.map((todo) => {
+                if (todo.firebaseName === firebaseName) {
+                    return { ...todo, completed: !todo.completed };
+                } else {
+                    return todo;
+                }
+            });
+            const checkedTodo = newTodos.filter(
+                (todo) => todo.firebaseName === firebaseName
+            );
+            setTodos(newTodos);
+            axiosFirebase
+                .patch(
+                    "/users/" + id + "/" + firebaseName + "/.json",
+                    checkedTodo[0]
+                )
+                .then(() => {
+                    setSuccess(true);
+                })
+                .catch((er) => {
+                    console.error(er.message);
+                });
+        } else if (action === "delete") {
+            const newTodos = todos.filter((todo) => {
+                return todo.firebaseName !== firebaseName;
+            });
+            setTodos(newTodos);
+            axiosFirebase
+                .delete("/users/" + id + "/" + firebaseName + "/.json")
+                .then(() => {
+                    setSuccess(true);
+                })
+                .catch((er) => {
+                    console.error(er.message);
+                });
+        }
     };
 
     useEffect(() => {
@@ -108,15 +164,6 @@ const Todos = (props: any) => {
                     const todosById = sup.sort((a: any, b: any) => {
                         return b.id - a.id;
                     });
-
-                    // const todosById = Object.entries(todos.data)
-                    //     .map((entry) => {
-                    //         return entry[1];
-                    //     })
-                    //     .sort((a: any, b: any) => {
-                    //         return b.id - a.id;
-                    //     });
-
                     return todosById;
                 } else {
                     return [];
@@ -133,47 +180,59 @@ const Todos = (props: any) => {
             });
     }, [success, id]);
 
-    const todosArray = todos.map((todo) => (
-        <Todo
-            key={todo.id}
-            id={todo.id}
-            title={todo.title}
-            userId={todo.userId}
-            completed={todo.completed}
-            firebase={todo.firebase}
-            handleCheck={handleCheck.bind(null, todo.firebaseName)}
-        />
-    ));
+    const todosArray = todos.map((todo) => {
+        return (
+            <Todo
+                key={todo.id}
+                id={todo.id}
+                title={todo.title}
+                userId={todo.userId}
+                completed={todo.completed}
+                firebase={todo.firebase}
+                handleEdit={() => {
+                    setInfoToModal({
+                        text: todo.title,
+                        firebaseName: todo.firebaseName,
+                    });
+                    toggleModal(true);
+                }}
+                handleCheck={handleCheckAndDelete.bind(null, todo.firebaseName)}
+            />
+        );
+    });
     return (
         <>
-            {addTodoModal && (
+            {modal && (
                 <AddTodo
                     toggleOpen={handleClose}
-                    isOpened={addTodoModal}
-                    addNewTodo={handleNewTodo}
-                    newTodoValue={newTodo}
-                    addTodo={handleAddTodo}
+                    isOpened={modal}
+                    addTodo={handleAddOrEditTodo}
                     error={error}
+                    textAreaRef={textAreaRef}
+                    inputIsValid={textAreaInput}
+                    text={infoToModal.text}
+                    firebaseName={infoToModal.firebaseName}
                 />
             )}
             <TodosLabel
                 username={username}
                 id={id}
                 addNew={() => {
-                    toggleAddTodoModal(true);
+                    setInfoToModal({ text: "", firebaseName: "" });
+                    toggleModal(true);
                 }}
             />
             {todosArray}
 
             <Snackbar
                 open={success}
-                autoHideDuration={6000}
+                autoHideDuration={500}
                 onClose={handleCloseSuccess}>
                 <Alert
                     severity="success"
                     variant="filled"
                     onClose={handleCloseSuccess}>
-                    Todo has been added to Firebase!
+                    Success
                 </Alert>
             </Snackbar>
         </>

@@ -30,6 +30,7 @@ const Todo = ({
     title,
     firebase,
     handleCheck,
+    handleEdit,
 }: ITodo) => {
     const classes = useStyles();
 
@@ -42,6 +43,7 @@ const Todo = ({
                     isFirebase={firebase}
                     completed={completed}
                     handleCheck={handleCheck}
+                    handleEdit={handleEdit}
                 />
             </CardContent>
         </Card>
