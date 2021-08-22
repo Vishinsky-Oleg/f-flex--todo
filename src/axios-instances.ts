@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const axiosJsonph = axios.create({
-    baseURL: "http://jsonplaceholder.typicode.com/",
+    baseURL: "https://jsonplaceholder.typicode.com/",
 });
 
 export const axiosFirebase = axios.create({
